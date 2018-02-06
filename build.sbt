@@ -7,7 +7,7 @@ crossScalaVersions in ThisBuild := Seq("2.10.7", Scala211, "2.12.4", "2.13.0-M2"
 
 scalaVersion in ThisBuild := Scala211
 
-organization in ThisBuild := "com.thesamet.scalapb"
+organization in ThisBuild := "com.github.xenoby"
 
 scalacOptions in ThisBuild ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
@@ -48,8 +48,16 @@ lazy val protobufRuntimeScala = crossProject(JSPlatform, JVMPlatform, NativePlat
   .settings(
     name := "protobuf-runtime-scala",
     libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "utest" % "0.6.3" % "test"
-    )
+      // "com.lihaoyi" %%% "utest" % "0.6.3" % "test"
+    ),
+    resolvers += "Sonatype staging" at "https://oss.sonatype.org/content/repositories/staging",
+    publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
+    credentials ++= {
+      lazy val credentials = sys.props("credentials")
+      val credentialsFile = if (credentials != null) new File(credentials) else null
+      if (credentialsFile != null) List(new FileCredentials(credentialsFile))
+      else Nil
+    }
   )
   .jvmSettings(
     // Add JVM-specific settings here
@@ -65,7 +73,7 @@ lazy val protobufRuntimeScala = crossProject(JSPlatform, JVMPlatform, NativePlat
   .nativeSettings(
     nativeLinkStubs := true // for utest
   )
-  
+
 testFrameworks in ThisBuild += new TestFramework("utest.runner.Framework")
 
 lazy val runtimeJS = protobufRuntimeScala.js
